@@ -1,0 +1,9 @@
+datadog_api_key: "{{ vault_datadog_api_key }}"
+datadog_site: "{{ vault_datadog_site }}"
+host_url: "cold-may.ru"
+datadog_checks:
+  http_check:
+    init_config:
+    instances:
+      - host: "https://{{ host_url }}"
+        name: "Main page"

@@ -1,0 +1,7 @@
+.terraform
+*.auto.tfvars
+*.tfvars
+*.backup
+*.tfstate
+
+vault_password

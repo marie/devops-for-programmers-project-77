@@ -1,0 +1,69 @@
+---
+- hosts: all
+  pre_tasks:
+    - name: "Update apt"
+      ansible.builtin.apt:
+        update_cache: yes
+      tags:
+        - pre-deploy
+  roles:
+    - role: geerlingguy.pip
+      tags:
+        - pre-deploy
+
+  tasks:
+    - name: Enshure docker exists
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+      tags:
+        - pre-deploy
+
+    - name: Ensure group "docker" exists
+      ansible.builtin.group:
+        name: docker
+        state: present
+      tags:
+        - pre-deploy
+
+    - name: Adding the user to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+      tags:
+        - pre-deploy
+
+    - name: Ensures docker dir exists
+      ansible.builtin.file:
+        path: "{{ docker_dir }}"
+        state: directory
+        mode: 0644
+      tags:
+        - deploy
+
+    - name: Create .env file
+      ansible.builtin.template:
+        src: .env.j2
+        dest: "{{ docker_dir }}/.env"
+        mode: 0644
+      tags:
+        - deploy
+
+    - name: Create Redmine container
+      community.docker.docker_container:
+        name: my-redmine
+        image: redmine
+        pull: true
+        state: started
+        ports:
+          - "{{ app_port }}:3000"
+        env_file: "{{ docker_dir }}/.env"
+      tags:
+        - deploy
+
+- hosts: webservers
+  roles:
+    - role: datadog.datadog
+      tags:
+        - monitoring

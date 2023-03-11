@@ -1,0 +1,7 @@
+db_address: "{{ vault_db_address }}"
+db_username: "{{ vault_db_username }}"
+db_password: "{{ vault_db_password }}"
+docker_dir: "/srv/docker"
+app_port: 80
+pip_install_packages:
+  - name: docker
