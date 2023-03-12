@@ -20,7 +20,7 @@ terraform {
       source = "yandex-cloud/yandex"
     }
     datadog = {
-      source = "DataDog/datadog"
+      source  = "DataDog/datadog"
       version = "3.10.0"
     }
   }
@@ -28,7 +28,7 @@ terraform {
 }
 
 provider "yandex" {
-  zone = "ru-central1-a"
+  zone  = "ru-central1-a"
   token = var.yc_token
 }
 

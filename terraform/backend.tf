@@ -1,36 +1,36 @@
-variable yc_folder_id {
+variable "yc_folder_id" {
   type = string
 }
 
-variable yc_subnet_v4_cidr_blocks {
+variable "yc_subnet_v4_cidr_blocks" {
   type = list(string)
 }
 
-variable yc_zone {
+variable "yc_zone" {
   type = string
 }
 
-variable yc_certificate_ids {
+variable "yc_certificate_ids" {
   type = list(string)
 }
 
-variable db_user_name {
+variable "db_user_name" {
   type = string
 }
 
-variable db_user_password {
+variable "db_user_password" {
   type = string
 }
 
-variable record_txt {
+variable "record_txt" {
   type = string
 }
 
-variable dns_zone {
+variable "dns_zone" {
   type = string
 }
 
-variable host {
+variable "host" {
   type = string
 }
 
@@ -41,17 +41,17 @@ resource "yandex_compute_instance" "vm-1" {
   zone        = var.yc_zone
   resources {
     core_fraction = 5
-    cores  = 2
-    memory = 1
+    cores         = 2
+    memory        = 1
   }
   boot_disk {
     initialize_params {
       image_id = "fd8v0s6adqu3ui3rsuap" # ОС (Ubuntu, 22.04 LTS)
-      size = 15
+      size     = 15
     }
   }
   network_interface {
-    subnet_id = "${yandex_vpc_subnet.subnet-1.id}"
+    subnet_id = yandex_vpc_subnet.subnet-1.id
     nat       = true
   }
   metadata = {
@@ -72,11 +72,11 @@ resource "yandex_compute_instance" "vm-2" {
   boot_disk {
     initialize_params {
       image_id = "fd8v0s6adqu3ui3rsuap" # ОС (Ubuntu, 22.04 LTS)
-      size = 15
+      size     = 15
     }
   }
   network_interface {
-    subnet_id = "${yandex_vpc_subnet.subnet-1.id}"
+    subnet_id = yandex_vpc_subnet.subnet-1.id
     nat       = true
   }
   metadata = {
@@ -85,9 +85,9 @@ resource "yandex_compute_instance" "vm-2" {
 }
 
 resource "yandex_alb_load_balancer" "balancer-1" {
-  folder_id   = var.yc_folder_id
-  name        = "my-load-balancer"
-  network_id  = yandex_vpc_network.network-1.id
+  folder_id  = var.yc_folder_id
+  name       = "my-load-balancer"
+  network_id = yandex_vpc_network.network-1.id
 
   allocation_policy {
     location {
@@ -103,7 +103,7 @@ resource "yandex_alb_load_balancer" "balancer-1" {
         external_ipv4_address {
         }
       }
-      ports = [ 443 ]
+      ports = [443]
     }
     tls {
       default_handler {
@@ -156,13 +156,13 @@ resource "yandex_alb_target_group" "target-group-1" {
   name      = "my-target-group"
 
   target {
-    subnet_id  = "${yandex_vpc_subnet.subnet-1.id}"
-    ip_address = "${yandex_compute_instance.vm-1.network_interface.0.ip_address}"
+    subnet_id  = yandex_vpc_subnet.subnet-1.id
+    ip_address = yandex_compute_instance.vm-1.network_interface.0.ip_address
   }
 
   target {
-    subnet_id  = "${yandex_vpc_subnet.subnet-1.id}"
-    ip_address = "${yandex_compute_instance.vm-2.network_interface.0.ip_address}"
+    subnet_id  = yandex_vpc_subnet.subnet-1.id
+    ip_address = yandex_compute_instance.vm-2.network_interface.0.ip_address
   }
 }
 
@@ -187,14 +187,14 @@ resource "yandex_mdb_mysql_cluster" "db-1" {
 }
 
 resource "yandex_mdb_mysql_user" "db-user-1" {
-    cluster_id = yandex_mdb_mysql_cluster.db-1.id
-    name       = var.db_user_name
-    password   = var.db_user_password
+  cluster_id = yandex_mdb_mysql_cluster.db-1.id
+  name       = var.db_user_name
+  password   = var.db_user_password
 
-    permission {
-      database_name = yandex_mdb_mysql_database.db-1.name
-      roles = ["ALL"]
-    }
+  permission {
+    database_name = yandex_mdb_mysql_database.db-1.name
+    roles         = ["ALL"]
+  }
 }
 
 resource "yandex_mdb_mysql_database" "db-1" {
@@ -211,7 +211,7 @@ resource "yandex_vpc_subnet" "subnet-1" {
   folder_id      = var.yc_folder_id
   name           = "my-subnet"
   zone           = var.yc_zone
-  network_id     = "${yandex_vpc_network.network-1.id}"
+  network_id     = yandex_vpc_network.network-1.id
   v4_cidr_blocks = var.yc_subnet_v4_cidr_blocks
 }
 
@@ -220,8 +220,8 @@ resource "yandex_dns_zone" "zone-1" {
   name        = "my-public-zone"
   description = "public zone"
 
-  zone    = var.dns_zone
-  public  = true
+  zone   = var.dns_zone
+  public = true
 }
 
 resource "yandex_dns_recordset" "rs-1" {
